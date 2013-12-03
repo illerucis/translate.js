@@ -117,6 +117,7 @@ translateApp.controller('translateCtrl', function ($scope) {
 	    $scope.translatedText = "";
 	    $scope.leftOverText = $scope.originalText;
 	    $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
+	    $scope.previousHighlightLength = 0;
 	}
 
 
