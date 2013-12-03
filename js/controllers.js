@@ -2,59 +2,63 @@ var translateApp = angular.module('translateApp', []);
 
 translateApp.controller('translateCtrl', function ($scope) {
 
-    $scope.previousTranslations = []
+    $scope.previousTranslations = {}
 
-    $scope.originalText = "translate me.";
+    $scope.originalText = "translate.";
     $scope.translatedText = "";
     $scope.leftOverText = $scope.originalText;
 
     $scope.previousHighlightLength = 0;
 
     $scope.stubbedOutTranslator = {
-	"translate"     : "oversette",
-	"me."           : "meg",
-	"translate me." : "oversette meg.",
+	"translate."     : "oversett."
     };
 
-    $scope.matchStrings = function(fullText, highlightedText) {
-	return 
-    };
-
-    $scope.startOk = function(fullText, matchObject) {
-	return matchObject.start == 0 || fullText.charAt(matchObject.start - 1) == ' ';
+    $scope.startOk = function(start) {
+	return start == 0 || 
+	    $scope.originalText.charAt(start - 1) == ' ';
     }
 
-    $scope.endOk = function(fullText, matchObject) {
-	return matchObject.end == fullText.length - 1 || 
-	    fullText.charAt(matchObject.end + 1) == ' ';
+    $scope.endOk = function(end) {
+	return end == $scope.originalText.length - 1 || 
+	    $scope.originalText.charAt(end + 1) == ' ';
     }
 
-    $scope.parseTranslationElements = function(fullText, highlightedText) {
+    $scope.findMatchIndexes = function(highlightedText) {
 
-	var start = fullText.indexOf(highlightedText);
-	var end = start + highlightedText.length;
+	var start = $scope.originalText.indexOf(highlightedText);
+	var end = start + highlightedText.length - 1;
 
-	while ( ( ! $scope.startOk(fullText, match) ) && match.start < match.end )
-	    match.start++;
+	while ( ( ! $scope.startOk(start) ) && start < end )
+	    start++;
 
-	while ( ( ! $scope.endOk(fullText, match) ) && match.end > -1 )
-	    match.end--;
+	while ( ( ! $scope.endOk(end) ) && end > 0 )
+	    end--;
 
-	return { 
-	    "beginning": fullText.slice(0, match.start),
-	    "middle"   : fullText.slice(match.start, match.end + 1),
-	    "end"      : fullText.slice(match.end + 1, fullText.length)
-	};
+	return { "start": start, "end": end };
 
     }
-    $scope.findPreviousTranslation = function(translation) {
-	for (var i = 0; i < $scope.previousTranslations.length; i++) {
-	    var t = $scope.previousTranslations[i];
-	    if (t.translatedText == translation) {
-		return i;
-	    }
+
+    $scope.setTranslation = function(matchIndexes) {
+	
+	// recover the previous words
+	var previousWords = "";
+	
+	if ( $scope.previousTranslations.hasOwnProperty($scope.translatedText) ) {
+	    previousWords = $scope.previousTranslations[$scope.translatedText];
 	}
-	return -1;
+	
+	var newWords = $scope.originalText.slice(matchIndexes.start, matchIndexes.end + 1);
+
+	var sendToTranslator = previousWords + newWords;
+
+	var translation = $scope.stubbedOutTranslator[sendToTranslator];
+
+	$scope.previousTranslations[translation] = sendToTranslator;
+
+	$scope.translatedText = translation;
+	$scope.leftOverText = $scope.originalText.slice(matchIndexes.end + 1);
+	
     }
 
     $scope.translateText = function() {
@@ -67,18 +71,13 @@ translateApp.controller('translateCtrl', function ($scope) {
 
 	    $scope.previousHighlightLength = highlightedText.length;
 	    
-	    // an object representing the start and end position of the highlighted text
-	    var translation = $scope.parseTranslationElements(fullText, highlightedText);
+	    // an object representing the adjusted match indexes of the highlighted text
+	    var matchIndexes = $scope.findMatchIndexes(highlightedText);
 
-	    // if a valid translation is possible, hit the API
-	    if (translation.middle) {
-		replacementText = $scope.getReplacementText(translation);
-		event.target.textContent = replacementText;
+	    // given the adjusted indexes (if valid), set the translation
+	    if (matchIndexes.start < matchIndexes.end) {
+		$scope.setTranslation(matchIndexes);
 	    }
-	}
-	else {
-	    $scope.translatedText = "";
-	    $scope.leftOverText = $scope.originalText;
 	}
     };
 });
