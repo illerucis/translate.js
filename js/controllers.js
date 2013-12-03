@@ -68,8 +68,6 @@ translateApp.controller('translateCtrl', function ($scope) {
 
 	if ( highlightedText.length > 0 && 
 	     highlightedText.length > $scope.previousHighlightLength ) {
-
-	    $scope.previousHighlightLength = highlightedText.length;
 	    
 	    // an object representing the adjusted match indexes of the highlighted text
 	    var matchIndexes = $scope.findMatchIndexes(highlightedText);
@@ -79,6 +77,13 @@ translateApp.controller('translateCtrl', function ($scope) {
 		$scope.setTranslation(matchIndexes);
 	    }
 	}
+	else if (highlightedText == "") {
+	    $scope.translatedText = "";
+	    $scope.leftOverText = $scope.originalText;
+	}
+
+	$scope.previousHighlightLength = highlightedText.length;
+
     };
 });
 
