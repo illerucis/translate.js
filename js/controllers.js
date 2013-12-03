@@ -48,25 +48,6 @@ translateApp.controller('translateCtrl', function ($scope) {
 	}
     }
 
-    $scope.findMatchIndexes = function(highlightedText) {
-	var start;
-
-	if ($scope.previousMatch["start"] > 0) 
-	    start = $scope.previousMatch.start; 
-	else 
-	    start = $scope.originalText.indexOf(highlightedText); 
-
-	var end = start + highlightedText.length - 1 + $scope.previousMatch.padding;
-
-	while ( ( ! $scope.startOk(start) ) && start < end )
-	    start++;
-
-	while ( ( ! $scope.endOk(end) ) && end > 0 )
-	    end--;
-
-	return { "start": start, "end": end };
-
-    }
     
     $scope.getWordsToTranslate = function(matchIndexes) {
 	return $scope.originalText.slice(matchIndexes.start, matchIndexes.end + 1);
@@ -90,6 +71,28 @@ translateApp.controller('translateCtrl', function ($scope) {
 	$scope.saveIndexesAndPadding(matchIndexes, padding);
 
     }
+
+    $scope.findMatchIndexes = function(highlightedText) {
+
+	var start;
+
+	if ($scope.previousMatch["start"] > 0) 
+	    start = $scope.previousMatch.start; 
+	else 
+	    start = $scope.originalText.indexOf(highlightedText); 
+
+	var end = start + highlightedText.length - 1 - $scope.previousMatch.padding;
+
+	while ( ( ! $scope.startOk(start) ) && start < end )
+	    start++;
+
+	while ( ( ! $scope.endOk(end) ) && end > 0 )
+	    end--;
+
+	return { "start": start, "end": end };
+
+    }
+
 
     $scope.translateText = function() {
 
