@@ -93,7 +93,6 @@ translateApp.controller('translateCtrl', function ($scope) {
 
     }
 
-
     $scope.translateText = function() {
 
 	// get the full text, highlighted text, containing element
@@ -119,9 +118,6 @@ translateApp.controller('translateCtrl', function ($scope) {
 	    $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
 	    $scope.previousHighlightLength = 0;
 	}
-
-
-
     };
 });
 
