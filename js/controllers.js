@@ -119,9 +119,5 @@ translateApp.controller('translateCtrl', function ($scope) {
 	    $scope.previousHighlightLength = 0;
 	}
     };
-});
 
-// the new idea is to store three variables - the original text, the translated text
-// due to highligthing a word, and the left over text (original - translated)
-// always display translated + leftover. when there's no highlighted text, 
-// 
+});
