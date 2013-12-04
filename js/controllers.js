@@ -7,39 +7,26 @@ translateApp.controller('translateCtrl', function ($scope) {
     $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
     $scope.prevHighlightLength = 0;
 
+    $scope.seenPhrases = {}
+
     $scope.stubbedOutTranslator = {
-	"never"          : "決して",
-	"never graduate.": "卒業決して." 
-    };
-
-    $scope.updateMatchIndexes = function(newEnd) {
-	$scope.previousMatch["end"] = newEnd;
-    }
-
-    $scope.getPreviousWords = function() {
-	if ($scope.previousMatch) {
-	    return $scope.originalText.slice($scope.previousMatch["start"], 
-					     $scope.previousMatch["end"]);
-	}
-	else { return ""; }
-    }
-
-    $scope.getNewWords = function(match) {
-	if ($scope.previousMatch) {
-	    return $scope.originalText.slice($scope.previousMatch["end"], 
-					     match["end"]);
-	}
-	else {
-	    return $scope.originalText.slice(match["start"], match["end"]);
-	}
-    }
+	"The": "ザ·",
+	"The quick": "クイック",
+	"The quick brown": "速い茶色",
+	"The quick brown fox": "速い茶色のキツネ",
+	"The quick brown fox jumps": "速い茶色のキツネはジャンプ",
+	"The quick brown fox jumps over": "速い茶色のキツネは飛び越え",
+	"The quick brown fox jumps over the": "速い茶色のキツネは飛び越え",
+	"The quick brown fox jumps over the lazy": "速い茶色のキツネは、のろまな飛び越え",
+	"The quick brown fox jumps over the lazy dog.": "速い茶色のキツネは、のろまなイヌに飛びかかった"};
     
     $scope.setTranslation = function(match) {
 	
 	var wordsToTranslate = $scope.originalText.slice(match.start, match.end + 1);
+
 	var translation = $scope.stubbedOutTranslator[wordsToTranslate];
 	var padding = translation.length - wordsToTranslate.length;
-	
+
 	// create a copy with the translation inserted
 	var translatedText = $scope.originalText.slice(0, match.start) + 
 	    translation + $scope.originalText.slice(match.end + 1);
@@ -93,7 +80,7 @@ translateApp.controller('translateCtrl', function ($scope) {
 	    var hlEnd = selection.getRangeAt(0).endOffset - 1;
 	    var hlLength = hlEnd - hlStart + 1;
 
-	    if ( hlLength > 0 && hlLength > $scope.prevHighlightLength ) {
+	    if ( hlLength > 0 && hlLength != $scope.prevHighlightLength ) {
 
 		$scope.prevHighlightLength = hlLength;
 
@@ -101,9 +88,8 @@ translateApp.controller('translateCtrl', function ($scope) {
 		var match = $scope.findMatch(hlStart, hlEnd);
 		
 		// given the adjusted indexes (if valid), set the translation
-		if (match.start < match.end) {
+		if (match.start < match.end) 
 	    	    $scope.setTranslation(match);
-		}
 
 	    }
 	}
