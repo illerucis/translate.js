@@ -2,29 +2,15 @@ var translateApp = angular.module('translateApp', []);
 
 translateApp.controller('translateCtrl', function ($scope) {
 
-    $scope.originalText = "translate me.";
-    $scope.translatedText = "";
-    $scope.leftOverText = $scope.originalText;
-
+    $scope.originalText = "";
+    $scope.element = null;
     $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
-
-    $scope.previousHighlightLength = 0;
+    $scope.prevHighlightLength = 0;
 
     $scope.stubbedOutTranslator = {
-	"translate"     : "oversett",
-	"translate "    : "oversett ",
-	"translate me." : "oversett meg."
+	"never"          : "決して",
+	"never graduate.": "卒業決して." 
     };
-
-    $scope.startOk = function(start) {
-	return start == 0 || 
-	    $scope.originalText.charAt(start - 1) == ' ';
-    }
-
-    $scope.endOk = function(end) {
-	return end == $scope.originalText.length - 1 || 
-	    $scope.originalText.charAt(end + 1) == ' ';
-    }
 
     $scope.updateMatchIndexes = function(newEnd) {
 	$scope.previousMatch["end"] = newEnd;
@@ -38,86 +24,94 @@ translateApp.controller('translateCtrl', function ($scope) {
 	else { return ""; }
     }
 
-    $scope.getNewWords = function(matchIndexes) {
+    $scope.getNewWords = function(match) {
 	if ($scope.previousMatch) {
 	    return $scope.originalText.slice($scope.previousMatch["end"], 
-					     matchIndexes["end"]);
+					     match["end"]);
 	}
 	else {
-	    return $scope.originalText.slice(matchIndexes["start"], matchIndexes["end"]);
+	    return $scope.originalText.slice(match["start"], match["end"]);
 	}
     }
-
     
-    $scope.getWordsToTranslate = function(matchIndexes) {
-	return $scope.originalText.slice(matchIndexes.start, matchIndexes.end + 1);
-    }
-
-    $scope.saveIndexesAndPadding = function(matchIndexes, padding) {
-	$scope.previousMatch["start"] = matchIndexes.start;
-	$scope.previousMatch["end"] = matchIndexes.end;
-	$scope.previousMatch["padding"] = padding;
-    }
-
-    $scope.setTranslation = function(matchIndexes) {
+    $scope.setTranslation = function(match) {
 	
-	var wordsToTranslate = $scope.getWordsToTranslate(matchIndexes);
+	var wordsToTranslate = $scope.originalText.slice(match.start, match.end + 1);
 	var translation = $scope.stubbedOutTranslator[wordsToTranslate];
 	var padding = translation.length - wordsToTranslate.length;
-
-	$scope.translatedText = translation;
-	$scope.leftOverText = $scope.originalText.slice(matchIndexes["end"] + 1);
 	
-	$scope.saveIndexesAndPadding(matchIndexes, padding);
+	// create a copy with the translation inserted
+	var translatedText = $scope.originalText.slice(0, match.start) + 
+	    translation + $scope.originalText.slice(match.end + 1);
+	
+	$scope.element.textContent = translatedText;
+
+	$scope.previousMatch["start"] = match.start;
+	$scope.previousMatch["end"] = match.end;
+	$scope.previousMatch["padding"] = padding;
 
     }
 
-    $scope.findMatchIndexes = function(highlightedText) {
+    $scope.startOk = function(start) {
+	return start == 0 || 
+	    $scope.originalText.charAt(start - 1) == ' ';
+    }
 
-	var start;
+    $scope.endOk = function(end) {
+	return end == $scope.originalText.length - 1 || 
+	    $scope.originalText.charAt(end + 1) == ' ';
+    }
 
-	if ($scope.previousMatch["start"] > 0) 
-	    start = $scope.previousMatch.start; 
-	else 
-	    start = $scope.originalText.indexOf(highlightedText); 
 
-	var end = start + highlightedText.length - 1 - $scope.previousMatch.padding;
+    $scope.findMatch = function(hlStart, hlEnd) {
+
+	var start = hlStart;
+	var end = hlEnd - $scope.previousMatch.padding;
 
 	while ( ( ! $scope.startOk(start) ) && start < end )
 	    start++;
-
 	while ( ( ! $scope.endOk(end) ) && end > 0 )
 	    end--;
 
-	return { "start": start, "end": end };
+	return { "start": start, "end": end};
 
     }
 
     $scope.translateText = function() {
 
-	// get the full text, highlighted text, containing element
-	var highlightedText = window.getSelection().toString();
+	var selection = window.getSelection();
 
-	if ( highlightedText.length > 0 && 
-	     highlightedText.length > $scope.previousHighlightLength ) {
-
-	    $scope.previousHighlightLength = highlightedText.length;	    
-
-	    // an object representing the adjusted match indexes of the highlighted text
-	    var matchIndexes = $scope.findMatchIndexes(highlightedText);
-
-	    // given the adjusted indexes (if valid), set the translation
-	    if (matchIndexes.start < matchIndexes.end) {
-	    	$scope.setTranslation(matchIndexes);
+	if (selection.anchorNode) {
+	    // save the original text only once
+	    if ( $scope.originalText == "") {
+		$scope.originalText = selection.anchorNode.parentElement.textContent;
+		$scope.element = selection.anchorNode.parentElement;
 	    }
 
-	}
-	else if (highlightedText == "") {
-	    $scope.translatedText = "";
-	    $scope.leftOverText = $scope.originalText;
-	    $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
-	    $scope.previousHighlightLength = 0;
-	}
-    };
+	    // get the full text, highlighted text, containing element
+	    var hlStart = selection.getRangeAt(0).startOffset;
+	    var hlEnd = selection.getRangeAt(0).endOffset - 1;
+	    var hlLength = hlEnd - hlStart + 1;
 
+	    if ( hlLength > 0 && hlLength > $scope.prevHighlightLength ) {
+
+		$scope.prevHighlightLength = hlLength;
+
+		// an object representing the adjusted match indexes of the highlighted text
+		var match = $scope.findMatch(hlStart, hlEnd);
+		
+		// given the adjusted indexes (if valid), set the translation
+		if (match.start < match.end) {
+	    	    $scope.setTranslation(match);
+		}
+
+	    }
+	}
+    }
+    
+    $scope.clearText = function() {
+	$scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
+	$scope.prevHighlightLength = 0;
+	$scope.element.textContent = $scope.originalText;
+    }
 });
