@@ -1,6 +1,6 @@
 var translateApp = angular.module('translateApp', []);
 
-translateApp.controller('translateCtrl', function ($scope) {
+translateApp.controller('translateCtrl', function ($scope, $http) {
 
     $scope.originalText = "";
     $scope.element = null;
@@ -8,6 +8,7 @@ translateApp.controller('translateCtrl', function ($scope) {
     $scope.prevHighlightLength = 0;
 
     $scope.seenPhrases = {}
+    $scope.accessToken = null;
 
     $scope.setTranslation = function(match) {
 	
@@ -19,7 +20,8 @@ translateApp.controller('translateCtrl', function ($scope) {
 	// create a copy with the translation inserted
 	var translatedText = $scope.originalText.slice(0, match.start) + 
 	    translation + $scope.originalText.slice(match.end + 1);
-	
+
+	$scope.prevHighlightLength = translation.length;
 	$scope.element.textContent = translatedText;
 
 	$scope.previousMatch["start"] = match.start;
@@ -53,34 +55,55 @@ translateApp.controller('translateCtrl', function ($scope) {
 
     }
 
+    $scope.setAccessToken = function() {
+
+	var accessTokenParams = getAccessTokenParams();
+
+	$http.post({"url": accessTokenParams.url, "params": accessTokenParams.request}).
+	    success(function(data) { 
+		alert("data", data); 
+		$scope.accessToken = "bob";
+	    }).
+	    error(function(data, status, headers, config) {
+		console.log("Fail", status, data, headers, config);
+		$scope.accessToken = "bobob";
+	    });
+    }
+
+
     $scope.translateText = function() {
-
+	
+	
 	var selection = window.getSelection();
-
+	console.log($scope.accessToken);
 	if (selection.anchorNode) {
 
 	    // save the original text only once
 	    if ( $scope.originalText == "") {
+
 		$scope.originalText = selection.anchorNode.parentElement.textContent;
 		$scope.element = selection.anchorNode.parentElement;
+
+		if ( $scope.accessToken == null ) {
+		    $scope.setAccessToken();
+		}
+
 	    }
 
-	    // get the full text, highlighted text, containing element
-	    var hlStart = selection.getRangeAt(0).startOffset;
-	    var hlEnd = selection.getRangeAt(0).endOffset - 1;
-	    var hlLength = hlEnd - hlStart + 1;
+	    // // get the full text, highlighted text, containing element
+	    // var hlStart = selection.getRangeAt(0).startOffset;
+	    // var hlEnd = selection.getRangeAt(0).endOffset - 1;
+	    // var hlLength = hlEnd - hlStart + 1;
 
-	    if ( hlLength > 0 && hlLength != $scope.prevHighlightLength ) {
+	    // if ( hlLength > 0 && hlLength > $scope.prevHighlightLength ) {
 
-		$scope.prevHighlightLength = hlLength;
-
-		// an object representing the adjusted match indexes of the highlighted text
-		var match = $scope.findMatch(hlStart, hlEnd);
+	    // 	// an object representing the adjusted match indexes of the highlighted text
+	    // 	var match = $scope.findMatch(hlStart, hlEnd);
 		
-		// given the adjusted indexes (if valid), set the translation
-		if (match.start < match.end) 
-	    	    $scope.setTranslation(match);
-	    }
+	    // 	// given the adjusted indexes (if valid), set the translation
+	    // 	if (match.start < match.end) 
+	    // 	    $scope.setTranslation(match);
+	    // }
 	}
     }
     
