@@ -1,11 +1,11 @@
 stubbedOutTranslator = {
-    "An": "The",
-    "An jumps": "The jumps",
-    "An jumps sionnach": "The fox jumps",
-    "An jumps sionnach donn": "The brown fox jumps",
-    "An jumps sionnach donn tapaidh": "The quick brown fox jumps",
-    "An jumps sionnach donn tapaidh thar": "The quick brown fox jumps over",
-    "An jumps sionnach donn tapaidh thar an": "The quick brown fox jumps over the",
-    "An jumps sionnach donn tapaidh thar an madra": "The quick brown fox jumps over the dog",
-    "An jumps sionnach donn tapaidh thar an madra leisciúil.": "The quick brown fox jumps over the lazy dog."
+    "Mae'r": "The",
+    "Mae'r llwynog": "The fox",
+    "Mae'r llwynog brown": "The brown fox",
+    "Mae'r llwynog brown cyflym": "The quick brown fox",
+    "Mae'r llwynog brown cyflym neidio": "The quick brown fox jumps",
+    "Mae'r llwynog brown cyflym neidio dros": "The quick brown fox jumps over",
+    "Mae'r llwynog brown cyflym neidio dros y": "The quick brown fox jumps over the",
+    "Mae'r llwynog brown cyflym neidio dros y ci": "The quick brown fox jumps over the dog",
+    "Mae'r llwynog brown cyflym neidio dros y ci ddiog.": "The quick brown fox jumps over the lazy dog."
 };
