@@ -7,9 +7,6 @@ translateApp.controller('translateCtrl', function ($scope, $http) {
     $scope.previousMatch = { "start": -1, "end": -1, "padding": 0 };
     $scope.prevHighlightLength = 0;
 
-    $scope.seenPhrases = {}
-    $scope.accessToken = null;
-
     $scope.setTranslation = function(match) {
 	
 	var wordsToTranslate = $scope.originalText.slice(match.start, match.end + 1);
@@ -55,17 +52,14 @@ translateApp.controller('translateCtrl', function ($scope, $http) {
 
     $scope.translateText = function() {
 	
-	
 	var selection = window.getSelection();
 
 	if (selection.anchorNode) {
 
 	    // save the original text only once
 	    if ( $scope.originalText == "") {
-
 		$scope.originalText = selection.anchorNode.parentElement.textContent;
 		$scope.element = selection.anchorNode.parentElement;
-
 	    }
 
 	    // get the full text, highlighted text, containing element
@@ -82,6 +76,7 @@ translateApp.controller('translateCtrl', function ($scope, $http) {
 	    	if (match.start < match.end) 
 	    	    $scope.setTranslation(match);
 	    }
+
 	}
     }
     
